@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.comprehensive.board.mapper.boardMapper">
+	<sql id="search">
+		<if test="searchType != null">
+			<foreach collection="searchType" item="type">
+				and ${type} like '%' || #{keyword} || '%'
+			</foreach>
+		</if>
+	</sql>
+
+	<insert id="insert">
+		insert into comprehensiveboard(
+			seq,
+			title,
+			writer,
+			writedate,
+			hit,
+			content,
+			password)
+		values(
+			#{seq},
+			#{title},
+			#{writer},
+			sysdate,
+			#{hit},
+			#{content},
+			#{password})
+	</insert>
+	
+	<select id="selectAll" resultType="BoardVO">
+		select
+			*
+		from (
+			select
+				seq,
+				title,
+				writer,
+				to_char(writedate,'YYYY-MM-DD') as writedate,
+				hit,
+				row_number() over (order by seq desc) as rnum
+			from
+				comprehensiveboard where 1=1
+			<include refid="search"></include>
+		) mb where rnum between #{pageStart} and #{pageEnd}
+	</select>
+	
+	<select id="selectAllCount" resultType="int">
+		select count(seq) from comprehensiveboard where 1=1
+		<include refid="search"></include>
+	</select>
+	
+	<select id="select" resultType="BoardDetailDTO">
+		select
+			A.seq,
+			A.title,
+			A.writer,
+			A.password,
+			A.content,
+			to_char(A.writedate,'YYYY-MM-DD') as writedate,
+			B.original_Name,
+			B.file_seq
+		from
+			comprehensiveboard A,
+			comprehensiveboardfiles B
+		where
+			A.seq = B.board_seq
+			and A.seq = #{seq}
+	</select>
+	
+	<select id="maxSeq" resultType="int">
+		select
+			max(seq)
+		from
+			comprehensiveboard
+	</select>
+	
+	<update id="updateHit" parameterType="int">
+		update
+			comprehensiveboard
+		set
+			hit = hit + 1
+		where
+			seq = #{seq}
+	</update>
+	
+	<select id="checkPw" resultType="int">
+		select
+			count(*)
+		from
+			comprehensiveboard
+		where
+			seq = #{seq}
+			and password = #{password}
+	</select>
+	
+	<update id="update">
+		update comprehensiveboard set
+			title = #{title},
+			writer = #{writer},
+			password = #{password},
+			content = #{content}
+		where seq = #{seq}
+	</update>
+	
+	<delete id="delete">
+		delete from comprehensiveboard where seq = #{seq}
+	</delete>
+	
+</mapper>

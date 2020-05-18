@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.comprehensive.board.mapper.boardFilesMapper">
+
+	<select id="maxSeq" resultType="int">
+		select
+			max(file_seq)
+		from
+			comprehensiveboardfiles
+	</select>
+	
+	<insert id="insert">
+		insert into comprehensiveboardfiles(
+			file_seq,
+			board_seq,
+			file_name,
+			original_name)
+		values(
+			#{fileSeq},
+			#{boardSeq},
+			#{fileName},
+			#{originalName})
+	</insert>
+	
+	<select id="select" resultType="BoardFilesVO">
+		select
+			*
+		from
+			comprehensiveboardfiles
+		where
+			file_seq = #{fileSeq}
+	</select>
+	
+	<update id="update">
+		update comprehensiveboardfiles set
+			file_name = #{fileName},
+			original_name = #{originalName}
+		where file_seq = #{fileSeq}
+	</update>
+	
+	<delete id="delete">
+		delete from comprehensiveboardfiles where board_seq = #{boardSeq} and file_seq = #{fileSeq}
+	</delete>
+	
+</mapper>
